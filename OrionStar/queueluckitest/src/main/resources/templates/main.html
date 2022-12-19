@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Controlador Lucki</title>
+    <style>
+    div {
+    width: wrap-content;
+    }
+    td, th {
+      border: solid black 1px;
+      text-align: center;
+    }
+    table {
+        margin: 5px;
+        border: solid black 1px;
+    }
+    #customqueue {
+    display: block;
+    float: left;
+
+    }
+    #izq {
+    display: block;
+    float:left;
+    width: 45%
+    }
+    #der {
+    display: block;
+    float: right;
+    width: 45%
+    }
+    #ordenactual {
+    display:block;
+    float: right;}
+    </style>
+</head>
+<body>
+<iframe name="dummyframe" id="dummyframe" style="display:none";></iframe>
+<div id="izq">
+    <div id="ordenactual">
+        <h1>Orden actual en proceso</h1>
+        <table>
+            <td th:text="${orderinprocess}">
+        </table>
+    </div>
+<div>
+    <form method="POST" action="/api/v1/order/talk" target="dummyframe">
+        <table>
+            <tr><th colspan="2">Hablar</th></tr>
+            <tr><td>Texto:</td><td><input type="text" name="text" required/></td></tr>
+            <tr><td><input type="submit" value="Hablar" /></td>
+            <td><input type="submit" value="Insertar en cola: Hablar" formaction="/api/v1/orderqueue/talk" /></td></tr>
+        </table>
+    </form>
+</div>
+<div>
+    <form method="POST" action="/api/v1/order/wait" target="dummyframe">
+        <table>
+            <tr><th colspan="2">Esperar</th> </tr>
+            <tr><td>Tiempo:</td><td><input type="number" min="1" max="60" name="time" required/></td></tr>
+            <tr><td><input type="submit" value="Esperar" /></td>
+            <td><input type="submit" value="Insertar en cola: Esperar" formaction="/api/v1/orderqueue/wait" /></td></tr>
+        </table>
+    </form>
+</div>
+<div>
+    <form method="POST" action="/api/v1/order/video" target="dummyframe">
+        <table>
+            <tr><th colspan="2">Reproducir video</th></tr>
+            <tr><td>Nombre del video:</td>
+<!--                <td><input type="text" name="name" required/></td>-->
+                <td>
+
+                <select name="name">
+                    <option th:each="video : ${listaVideos}" th:value="${video}" th:text="${video}"></option>
+                </select>
+
+                </td>
+            </tr>
+            <tr><td><input type="submit" value="Play" /></td>
+            <td><input type="submit" value="Insertar en cola: Play video" formaction="/api/v1/orderqueue/video"/></td></tr>
+        </table>
+    </form>
+</div>
+<div>
+    <table>
+        <tr>
+            <th>Bateria</th>
+        </tr>
+        <tr>
+            <td th:text="${batteryLvl} + '%' "/>
+        </tr>
+    </table>
+</div>
+<div>
+    <h1 th:text="${mapName}"/>
+    <h2>Puntos disponibles</h2>
+    <table>
+        <tr><th>Nombre</th><th>X</th><th>Y</th><th>Z</th></tr>
+        <tr th:each="pointList:${pointList}"}>
+            <td th:text="${pointList.name}"></td>
+            <td th:text="${pointList.px}"></td>
+            <td th:text="${pointList.py}"></td>
+            <td th:text="${pointList.theta}"></td>
+            <td>
+                <form th:attr="action='/api/v1/order/walk?point='+ ${pointList.name}" method="POST" target="dummyframe">
+                    <input type="submit" value="Add" />
+                    <input type="number" min="0.1" max="0.85" step="0.05" name="speed" value="0.7"/>
+                </form>
+            </td>
+            <td>
+                <form th:attr="action='/api/v1/orderqueue/walk?point='+ ${pointList.name}" method="POST" target="dummyframe">
+                    <input type="submit" value="Insertar en cola: Ir a punto" />
+                    <input type="number" min="0.1" max="0.85" step="0.05" name="speed" value="0.7"/>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+<div>
+    <h1>Cola de órdenes simples</h1>
+    <table>
+        <tr><th>Acciones en cola</th><th>Arg</th></tr>
+        <tr th:each="order:${orderqueue}"}>
+            <td th:text="${order.action}"></td>
+            <td th:text="${order.arguments}"></td>
+        </tr>
+    </table>
+</div>
+</div>
+<div id="der">
+<div id="customqueue">
+    <div>
+        <h1>Cola de órdenes continua</h1>
+        <table>
+            <tr><th>Acciones en proceso</th><th>Arg</th></tr>
+            <tr th:each="order:${customorderqueue}"}>
+                <td th:text="${order.action}"></td>
+                <td th:text="${order.arguments}"></td>
+            </tr>
+        </table>
+        <form action="/api/v1/startcustomqueue" target="dummyframe" method="GET">
+            <input type="submit" value="Comenzar bucle de instrucciones">
+        </form>
+    </div>
+
+</div>
+    <form action="/api/v1/clearqueues" target="dummyframe" >
+        <input type="submit" id="limpiarcola" value="Borrar Cola">
+    </form>
+</div>
+
+</body>
+</html>
